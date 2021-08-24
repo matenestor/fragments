@@ -4,18 +4,24 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 import pygame
 
-FPS = 50
-DELTA = 3
+# adjust these constants for different simulation result
 AMOUNT_BALLS = 4
 RADIUS_BALLS = 60
-WIDTH, HEIGHT = 700, 700
-RESOLUTION = (WIDTH, HEIGHT)
-BLACK = (0, 0, 0)
-SCREEN = pygame.display.set_mode(RESOLUTION)
-CLOCK = pygame.time.Clock()
-
+# WARNING values above 10 might
+# cause seizures, ajdust at your own risk!
+COLOUR_SPEED = 3
 RADIUS_SHRINK = RADIUS_BALLS * 0.2
 THRESHOLD = RADIUS_BALLS * 0.2
+
+# program constants
+WIDTH, HEIGHT = 700, 700
+RESOLUTION = (WIDTH, HEIGHT)
+FPS = 50
+DELTA = 3
+BLACK = (0, 0, 0)
+COLOUR_TOP = 255 - COLOUR_SPEED
+SCREEN = pygame.display.set_mode(RESOLUTION)
+CLOCK = pygame.time.Clock()
 
 
 def print_help():
@@ -44,8 +50,11 @@ class Ball:
         self.pos_y = pos_y
         self.dir_x = dir_x
         self.dir_y = dir_y
-        self.colour = [rng(1, 255), rng(1, 255), rng(1, 255)]
-        self.col_change = [1, 1, 1]
+        self.colour = [
+                rng(COLOUR_SPEED, COLOUR_TOP),
+                rng(COLOUR_SPEED, COLOUR_TOP),
+                rng(COLOUR_SPEED, COLOUR_TOP)]
+        self.col_change = [COLOUR_SPEED, COLOUR_SPEED, COLOUR_SPEED]
         self.colour_hist = []
 
 
@@ -90,15 +99,19 @@ def render_frame(balls):
         # compute colours
         for i in range(3):
             # boundary check
-            if ball.colour[i] == 0 or ball.colour[i] == 255:
+            if ball.colour[i] <= COLOUR_SPEED \
+                    or ball.colour[i] >= COLOUR_TOP:
                 ball.col_change[i] *= -1
 
             # animate colours
             ball.colour[i] += ball.col_change[i]
 
         # draw
-        pygame.draw.circle(
-            SCREEN, ball.colour, (ball.pos_x, ball.pos_y), ball.radius)
+        try:
+            pygame.draw.circle(
+                SCREEN, ball.colour, (ball.pos_x, ball.pos_y), ball.radius)
+        except:
+            print(ball.colour)
 
     # remove ball completely when it is too small
     # can't remove from a list which is just being iterated,
